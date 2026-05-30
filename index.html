@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CS Portfolio — Team</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #080c14;
+      --surface:   #0d1220;
+      --border:    rgba(255,255,255,0.07);
+      --white:     #f0f2f7;
+      --muted:     rgba(240,242,247,0.45);
+      --dim:       rgba(240,242,247,0.18);
+      --accent-1:  #4f8ef7;
+      --accent-2:  #6fd87a;
+      --accent-3:  #e8609a;
+      --ease:      cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    html, body { height: 100%; }
+
+    body {
+      font-family: 'Syne', sans-serif;
+      background: var(--bg);
+      color: var(--white);
+      overflow: hidden;
+      cursor: none;
+    }
+
+    #cur {
+      position: fixed; z-index: 9999;
+      width: 8px; height: 8px;
+      background: var(--white);
+      border-radius: 50%;
+      pointer-events: none;
+      transform: translate(-50%,-50%);
+      will-change: left, top;
+      transition: width .2s var(--ease), height .2s var(--ease), background .2s;
+    }
+    #cur.big { width: 48px; height: 48px; background: rgba(255,255,255,.12); }
+    #cur-ring {
+      position: fixed; z-index: 9998;
+      width: 32px; height: 32px;
+      border: 1px solid rgba(255,255,255,.3);
+      border-radius: 50%;
+      pointer-events: none;
+      transform: translate(-50%,-50%);
+      will-change: left, top;
+    }
+
+    body::before {
+      content: '';
+      position: fixed; inset: 0; z-index: 1;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+      opacity: .028;
+      pointer-events: none;
+    }
+
+    .grid-lines {
+      position: fixed; inset: 0; z-index: 0;
+      pointer-events: none;
+      display: grid;
+      grid-template-columns: var(--sidebar-w, 280px) 1fr 1fr 1fr;
+    }
+    .grid-line {
+      border-right: 1px solid var(--border);
+      height: 100%;
+    }
+
+    .shell {
+      position: relative; z-index: 2;
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      grid-template-rows: 100vh;
+      height: 100vh;
+    }
+
+    .sidebar {
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 48px 40px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .sidebar-top {}
+
+    .wordmark {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      letter-spacing: .25em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 64px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .wordmark-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--accent-1);
+      animation: blink 2.4s ease-in-out infinite;
+    }
+    @keyframes blink {
+      0%,100% { opacity: 1; } 50% { opacity: .2; }
+    }
+
+    .sidebar-heading {
+      font-family: 'Instrument Serif', serif;
+      font-size: 38px;
+      font-weight: 400;
+      line-height: 1.1;
+      color: var(--white);
+      margin-bottom: 16px;
+    }
+    .sidebar-heading em {
+      font-style: italic;
+      color: var(--muted);
+    }
+
+    .sidebar-sub {
+      font-size: 13px;
+      font-weight: 400;
+      color: var(--muted);
+      line-height: 1.7;
+      max-width: 200px;
+    }
+
+    .member-nav {
+      margin-top: 56px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .member-pill {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 12px 16px;
+      border-radius: 6px;
+      cursor: none;
+      transition: background .25s ease;
+      text-decoration: none;
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 500;
+      letter-spacing: .02em;
+      position: relative;
+      overflow: hidden;
+    }
+    .member-pill::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: var(--pill-color, var(--accent-1));
+      opacity: 0;
+      transition: opacity .25s ease;
+      border-radius: 6px;
+    }
+    .member-pill:hover::before { opacity: .08; }
+    .member-pill:hover { color: var(--white); }
+    .member-pill.active { color: var(--white); }
+    .member-pill.active::before { opacity: .1; }
+
+    .pill-index {
+      font-family: 'Space Mono', monospace;
+      font-size: 9px;
+      letter-spacing: .1em;
+      color: var(--dim);
+      width: 20px;
+      flex-shrink: 0;
+      position: relative; z-index: 1;
+    }
+    .pill-name { position: relative; z-index: 1; }
+
+    .pill-accent {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--pill-color);
+      margin-left: auto;
+      position: relative; z-index: 1;
+      opacity: 0;
+      transform: scale(0);
+      transition: opacity .25s, transform .25s var(--ease);
+    }
+    .member-pill.active .pill-accent,
+    .member-pill:hover .pill-accent {
+      opacity: 1; transform: scale(1);
+    }
+
+    .sidebar-footer {
+      font-family: 'Space Mono', monospace;
+      font-size: 9px;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: var(--dim);
+      line-height: 1.8;
+    }
+
+    .stage {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stage-topbar {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 72px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 56px;
+      z-index: 10;
+    }
+    .topbar-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 9px;
+      letter-spacing: .25em;
+      text-transform: uppercase;
+      color: var(--dim);
+    }
+    .topbar-count {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      letter-spacing: .1em;
+      color: var(--muted);
+    }
+    .topbar-count span {
+      color: var(--white);
+      font-weight: 700;
+    }
+
+    .cards {
+      position: absolute;
+      inset: 72px 0 0 0;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .card {
+      position: relative;
+      overflow: hidden;
+      border-right: 1px solid var(--border);
+      cursor: none;
+      text-decoration: none;
+      display: block;
+    }
+    .card:last-child { border-right: none; }
+
+    .card-bg {
+      position: absolute; inset: 0;
+      background: var(--card-color);
+      opacity: 0;
+      transition: opacity .6s var(--ease);
+    }
+    .card:hover .card-bg { opacity: .06; }
+
+    .card-num {
+      position: absolute;
+      top: 40px; right: 40px;
+      font-family: 'Instrument Serif', serif;
+      font-size: 120px;
+      line-height: 1;
+      color: rgba(255,255,255,.03);
+      font-weight: 400;
+      pointer-events: none;
+      transition: color .5s ease, transform .6s var(--ease);
+      transform: translateY(0);
+    }
+    .card:hover .card-num {
+      color: rgba(255,255,255,.055);
+      transform: translateY(-8px);
+    }
+
+    .card-line {
+      position: absolute;
+      top: 0; left: 0;
+      width: 0; height: 2px;
+      background: var(--card-color);
+      transition: width .5s var(--ease);
+    }
+    .card:hover .card-line { width: 100%; }
+
+    .card-body {
+      position: absolute;
+      bottom: 56px; left: 48px; right: 48px;
+    }
+
+    .card-role {
+      font-family: 'Space Mono', monospace;
+      font-size: 9px;
+      letter-spacing: .25em;
+      text-transform: uppercase;
+      color: var(--card-color);
+      margin-bottom: 16px;
+      opacity: .8;
+    }
+
+    .card-name {
+      font-family: 'Instrument Serif', serif;
+      font-size: clamp(28px, 3vw, 42px);
+      font-weight: 400;
+      line-height: 1.1;
+      color: var(--white);
+      margin-bottom: 20px;
+      transition: transform .5s var(--ease);
+    }
+    .card:hover .card-name { transform: translateY(-4px); }
+
+    .card-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 32px;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity .4s .1s ease, transform .4s .1s var(--ease);
+    }
+    .card:hover .card-tags { opacity: 1; transform: translateY(0); }
+
+    .card-tag {
+      font-family: 'Space Mono', monospace;
+      font-size: 9px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      padding: 5px 10px;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      border-radius: 2px;
+    }
+
+    .card-cta {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-family: 'Syne', sans-serif;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--card-color);
+      opacity: 0;
+      transform: translateY(6px);
+      transition: opacity .4s .18s ease, transform .4s .18s var(--ease);
+    }
+    .card:hover .card-cta { opacity: 1; transform: translateY(0); }
+
+    .cta-arrow {
+      width: 28px; height: 1px;
+      background: var(--card-color);
+      position: relative;
+      transition: width .3s var(--ease);
+    }
+    .card:hover .cta-arrow { width: 44px; }
+    .cta-arrow::after {
+      content: '';
+      position: absolute;
+      right: 0; top: -3px;
+      width: 7px; height: 7px;
+      border-top: 1px solid var(--card-color);
+      border-right: 1px solid var(--card-color);
+      transform: rotate(45deg);
+    }
+
+    .card-center {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 80px; height: 80px;
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      transition: border-color .4s, transform .5s var(--ease), width .4s var(--ease), height .4s var(--ease);
+    }
+    .card:hover .card-center {
+      border-color: var(--card-color);
+      width: 100px; height: 100px;
+      transform: translate(-50%, -50%) rotate(45deg);
+    }
+    .card-center-inner {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      background: var(--card-color);
+      opacity: .3;
+      transition: opacity .4s, transform .4s var(--ease);
+    }
+    .card:hover .card-center-inner {
+      opacity: 1;
+      transform: rotate(-45deg) scale(1.4);
+    }
+
+    .card-scan {
+      position: absolute;
+      left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(to right, transparent, var(--card-color), transparent);
+      opacity: 0;
+      top: 50%;
+      transform: scaleX(0);
+      transition: opacity .3s, transform 0s;
+    }
+    .card:hover .card-scan {
+      opacity: .25;
+      transform: scaleX(1);
+      transition: opacity .3s, transform .6s var(--ease);
+    }
+
+    .stage-bottombar {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 48px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 56px;
+      z-index: 10;
+    }
+    .bottom-course {
+      font-family: 'Space Mono', monospace;
+      font-size: 9px;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      color: var(--dim);
+    }
+    .bottom-year {
+      font-family: 'Space Mono', monospace;
+      font-size: 9px;
+      letter-spacing: .2em;
+      color: var(--dim);
+    }
+
+    .shell { opacity: 0; animation: pageIn .8s var(--ease) .1s forwards; }
+    @keyframes pageIn { to { opacity: 1; } }
+
+    .sidebar-heading { opacity: 0; transform: translateY(16px); animation: fadeUp .7s var(--ease) .3s forwards; }
+    .sidebar-sub     { opacity: 0; transform: translateY(12px); animation: fadeUp .7s var(--ease) .45s forwards; }
+    .member-nav      { opacity: 0; transform: translateY(10px); animation: fadeUp .7s var(--ease) .55s forwards; }
+
+    .card:nth-child(1) { opacity: 0; animation: cardIn .8s var(--ease) .4s forwards; }
+    .card:nth-child(2) { opacity: 0; animation: cardIn .8s var(--ease) .55s forwards; }
+    .card:nth-child(3) { opacity: 0; animation: cardIn .8s var(--ease) .7s forwards; }
+
+    @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
+    @keyframes cardIn { to { opacity: 1; } }
+  </style>
+</head>
+<body>
+
+  <div id="cur"></div>
+  <div id="cur-ring"></div>
+
+  <div class="grid-lines" aria-hidden="true">
+    <div class="grid-line"></div>
+    <div class="grid-line"></div>
+    <div class="grid-line"></div>
+    <div class="grid-line"></div>
+  </div>
+
+  <div class="shell">
+
+    <aside class="sidebar">
+      <div class="sidebar-top">
+        <div class="wordmark">
+          <span class="wordmark-dot"></span>
+          Cloud Platforms · 2025
+        </div>
+
+        <h1 class="sidebar-heading">
+          Our<br>Team<br><em>Portfolios.</em>
+        </h1>
+
+        <p class="sidebar-sub">
+          Three developers. One shared semester. Select a member to explore their portfolio.
+        </p>
+
+        <nav class="member-nav">
+          <a class="member-pill" href="Abhra/Abhra.html"
+             style="--pill-color: var(--accent-1)">
+            <span class="pill-index">01</span>
+            <span class="pill-name">Abhra Vyas</span>
+            <span class="pill-accent"></span>
+          </a>
+          <a class="member-pill" href="Fernando/index.html"
+             style="--pill-color: var(--accent-2)">
+            <span class="pill-index">02</span>
+            <span class="pill-name">Fernando Addittiya</span>
+            <span class="pill-accent"></span>
+          </a>
+          <a class="member-pill" href="Maria/index.html"
+             style="--pill-color: var(--accent-3)">
+            <span class="pill-index">03</span>
+            <span class="pill-name">Maria Carrilho</span>
+            <span class="pill-accent"></span>
+          </a>
+        </nav>
+      </div>
+
+      <div class="sidebar-footer">
+        Woosong University<br>
+        Computer Science<br>
+        Azure Static Web Apps
+      </div>
+    </aside>
+
+    <main class="stage">
+
+      <div class="stage-topbar">
+        <span class="topbar-label">Select a member</span>
+        <span class="topbar-count"><span>3</span> portfolios</span>
+      </div>
+
+      <div class="cards">
+
+        <a class="card" href="Abhra/Abhra.html"
+           style="--card-color: var(--accent-1)">
+          <div class="card-bg"></div>
+          <div class="card-line"></div>
+          <div class="card-scan"></div>
+          <div class="card-num">01</div>
+          <div class="card-center">
+            <div class="card-center-inner"></div>
+          </div>
+          <div class="card-body">
+            <div class="card-role">Full-Stack Developer</div>
+            <div class="card-name">Abhra<br>Vyas</div>
+            <div class="card-tags">
+              <span class="card-tag">React</span>
+              <span class="card-tag">Node.js</span>
+              <span class="card-tag">Azure</span>
+            </div>
+            <div class="card-cta">
+              <span>View Portfolio</span>
+              <span class="cta-arrow"></span>
+            </div>
+          </div>
+        </a>
+
+        <a class="card" href="Fernando/index.html"
+           style="--card-color: var(--accent-2)">
+          <div class="card-bg"></div>
+          <div class="card-line"></div>
+          <div class="card-scan"></div>
+          <div class="card-num">02</div>
+          <div class="card-center">
+            <div class="card-center-inner"></div>
+          </div>
+          <div class="card-body">
+            <div class="card-role">Software Engineer</div>
+            <div class="card-name">Fernando<br>Addittiya</div>
+            <div class="card-tags">
+              <span class="card-tag">React Native</span>
+              <span class="card-tag">Python</span>
+              <span class="card-tag">Cloud</span>
+            </div>
+            <div class="card-cta">
+              <span>View Portfolio</span>
+              <span class="cta-arrow"></span>
+            </div>
+          </div>
+        </a>
+
+        <a class="card" href="Maria/index.html"
+           style="--card-color: var(--accent-3)">
+          <div class="card-bg"></div>
+          <div class="card-line"></div>
+          <div class="card-scan"></div>
+          <div class="card-num">03</div>
+          <div class="card-center">
+            <div class="card-center-inner"></div>
+          </div>
+          <div class="card-body">
+            <div class="card-role">UI/UX Developer</div>
+            <div class="card-name">Maria<br>Carrilho</div>
+            <div class="card-tags">
+              <span class="card-tag">Figma</span>
+              <span class="card-tag">JavaScript</span>
+              <span class="card-tag">Azure</span>
+            </div>
+            <div class="card-cta">
+              <span>View Portfolio</span>
+              <span class="cta-arrow"></span>
+            </div>
+          </div>
+        </a>
+
+      </div>
+
+      <div class="stage-bottombar">
+        <span class="bottom-course">Cloud Platforms Project · Group 07</span>
+        <span class="bottom-year">2025</span>
+      </div>
+
+    </main>
+
+  </div>
+
+  <script>
+    const cur     = document.getElementById('cur');
+    const curRing = document.getElementById('cur-ring');
+    let mx = window.innerWidth/2, my = window.innerHeight/2;
+    let rx = mx, ry = my;
+
+    document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+
+    (function loop() {
+      rx += (mx - rx) * 0.14;
+      ry += (my - ry) * 0.14;
+      cur.style.left     = mx + 'px';
+      cur.style.top      = my + 'px';
+      curRing.style.left = rx + 'px';
+      curRing.style.top  = ry + 'px';
+      requestAnimationFrame(loop);
+    })();
+
+    document.querySelectorAll('a').forEach(el => {
+      el.addEventListener('mouseenter', () => cur.classList.add('big'));
+      el.addEventListener('mouseleave', () => cur.classList.remove('big'));
+    });
+
+    const cards = document.querySelectorAll('.card');
+    const pills = document.querySelectorAll('.member-pill');
+
+    cards.forEach((card, i) => {
+      card.addEventListener('mouseenter', () => {
+        pills.forEach(p => p.classList.remove('active'));
+        pills[i].classList.add('active');
+      });
+      card.addEventListener('mouseleave', () => {
+        pills.forEach(p => p.classList.remove('active'));
+      });
+    });
+
+    pills.forEach((pill, i) => {
+      pill.addEventListener('mouseenter', () => {
+        cards.forEach(c => c.querySelector('.card-line').style.width = '0');
+        cards[i].querySelector('.card-bg').style.opacity = '0.06';
+      });
+      pill.addEventListener('mouseleave', () => {
+        cards.forEach(c => c.querySelector('.card-bg').style.opacity = '');
+      });
+    });
+  </script>
+</body>
+</html>
