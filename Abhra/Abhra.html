@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Abhra Vyas | Theoretical Physics & AI Computation</title>
+    <meta name="description" content="Portfolio of Abhra Vyas - Computational Physics, General Relativity, AI & ML.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-base: #030508;
+            --bg-surface: rgba(15, 20, 30, 0.4);
+            --bg-surface-hover: rgba(25, 30, 45, 0.6);
+            --border: rgba(116, 192, 252, 0.15);
+            --border-hover: rgba(116, 192, 252, 0.4);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent: #38bdf8;
+            --accent-glow: rgba(56, 189, 248, 0.4);
+            --purple-accent: #c084fc;
+        }
+        
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        html { scroll-behavior: smooth; }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-base);
+            color: var(--text-main);
+            overflow-x: hidden;
+            line-height: 1.7;
+        }
+
+        /* Canvas & Background */
+        #bg-canvas { position: fixed; inset: 0; z-index: -2; pointer-events: none; }
+        
+        .vignette {
+            position: fixed; inset: 0;
+            background: radial-gradient(circle at center, transparent 20%, var(--bg-base) 90%);
+            z-index: -1; pointer-events: none;
+        }
+
+        /* Navigation */
+        nav {
+            position: fixed; top: 0; width: 100%;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            background: rgba(3, 5, 8, 0.7);
+            border-bottom: 1px solid var(--border);
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 1.2rem 8%;
+            z-index: 1000;
+        }
+        
+        nav .logo { font-weight: 800; font-size: 1.2rem; letter-spacing: 1px; color: var(--text-main); text-decoration: none; }
+        nav .logo span { color: var(--accent); }
+        nav .links a { 
+            color: var(--text-muted); text-decoration: none; margin-left: 2.5rem; 
+            font-size: 0.9rem; font-weight: 500; transition: all 0.3s ease; 
+        }
+        nav .links a:hover { color: var(--accent); text-shadow: 0 0 10px var(--accent-glow); }
+
+        /* Layout & Typography */
+        section { padding: 130px 8% 50px; max-width: 1200px; margin: 0 auto; }
+        
+        .hero { min-height: 100vh; display: flex; align-items: center; position: relative; padding-top: 0; }
+        .hero-content { position: relative; z-index: 2; max-width: 850px; }
+        
+        h1 {
+            font-size: clamp(3rem, 7vw, 5.5rem);
+            font-weight: 800; line-height: 1.1; margin-bottom: 1.5rem; letter-spacing: -1px;
+            background: linear-gradient(135deg, #ffffff 0%, #93c5fd 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        
+        h2 { 
+            font-weight: 400; color: var(--accent); font-size: clamp(1.2rem, 2.5vw, 1.8rem); 
+            margin-bottom: 1.5rem; letter-spacing: 0.5px; 
+        }
+        
+        .hero p { max-width: 650px; font-size: 1.1rem; color: var(--text-muted); margin-bottom: 3rem; }
+        
+        h3 { 
+            font-size: 2rem; margin-bottom: 2.5rem; font-weight: 700; color: #fff; 
+            display: flex; align-items: center; gap: 1rem; 
+        }
+        h3::after { content: ""; height: 1px; flex-grow: 1; background: linear-gradient(90deg, var(--border), transparent); }
+        h4 { font-size: 1.2rem; margin-bottom: 0.5rem; font-weight: 600; color: #fff; }
+
+        /* Buttons */
+        .btns { display: flex; gap: 1rem; flex-wrap: wrap; }
+        .btn {
+            padding: 0.8rem 2rem; border-radius: 4px; text-decoration: none;
+            font-weight: 600; font-size: 0.95rem; transition: all 0.3s ease;
+            letter-spacing: 0.5px; cursor: pointer;
+        }
+        .btn-primary { 
+            background: var(--accent); color: var(--bg-base); 
+            box-shadow: 0 0 20px rgba(56, 189, 248, 0.2); border: 1px solid var(--accent);
+        }
+        .btn-primary:hover { background: transparent; color: var(--accent); box-shadow: 0 0 30px var(--accent-glow); }
+        .btn-outline { background: transparent; color: var(--text-main); border: 1px solid var(--border); }
+        .btn-outline:hover { border-color: var(--accent); background: var(--bg-surface); }
+
+        /* Cards */
+        .card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            backdrop-filter: blur(12px);
+            border-radius: 12px;
+            padding: 2.5rem;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        .card::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 2px;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+            opacity: 0; transition: opacity 0.4s ease;
+        }
+        .card:hover { 
+            transform: translateY(-5px); 
+            background: var(--bg-surface-hover); 
+            border-color: var(--border-hover); 
+            box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
+        }
+        .card:hover::before { opacity: 1; }
+        
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; }
+        
+        /* Typography utilities */
+        .muted { color: var(--text-muted); font-size: 0.95rem; }
+        .date { font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; color: var(--accent); letter-spacing: 1px; text-transform: uppercase; }
+        .tech-stack { font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; color: var(--purple-accent); margin-bottom: 1rem; display: block; }
+        
+        ul { padding-left: 1.5rem; color: var(--text-muted); margin-top: 1rem; }
+        li { margin-bottom: 0.8rem; padding-left: 0.5rem; }
+        li::marker { color: var(--accent); }
+
+        /* Timeline */
+        .timeline { border-left: 1px solid var(--border); padding-left: 3rem; position: relative; margin-left: 1rem; }
+        .timeline-item { margin-bottom: 3.5rem; position: relative; }
+        .timeline-item:last-child { margin-bottom: 0; }
+        .timeline-item::before {
+            content: ''; position: absolute; left: -3.35rem; top: 0.2rem;
+            width: 12px; height: 12px; border-radius: 50%;
+            background: var(--bg-base); border: 2px solid var(--accent);
+            transition: all 0.3s ease;
+        }
+        .timeline-item:hover::before { background: var(--accent); box-shadow: 0 0 15px var(--accent-glow); }
+
+        /* Skills */
+        .skill-category { margin-bottom: 2rem; }
+        .skill-category:last-child { margin-bottom: 0; }
+        .skill-category h5 { color: var(--text-main); margin-bottom: 1rem; font-size: 1rem; font-weight: 500; text-transform: uppercase; letter-spacing: 1px; }
+        .tags { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+        .tag {
+            padding: 0.5rem 1rem; background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border); border-radius: 4px;
+            font-size: 0.85rem; color: var(--text-muted);
+            transition: all 0.3s ease;
+        }
+        .tag:hover { color: var(--accent); border-color: var(--accent); background: rgba(56, 189, 248, 0.05); transform: translateY(-2px); }
+
+        /* Equations */
+        .eq-float { position: absolute; font-family: 'JetBrains Mono', monospace; color: rgba(255,255,255,0.05); font-size: 1.5rem; pointer-events: none; user-select: none; }
+
+        /* Footer */
+        footer { padding: 4rem 8% 2rem; text-align: center; color: var(--text-muted); font-size: 0.9rem; margin-top: 4rem; }
+
+        /* Animations */
+        .reveal { opacity: 0; transform: translateY(40px); transition: 1s cubic-bezier(0.16, 1, 0.3, 1); }
+        .reveal.show { opacity: 1; transform: none; }
+
+        @media (max-width: 768px) {
+            nav .links { display: none; }
+            h1 { font-size: 2.5rem; }
+            section { padding: 100px 6% 40px; }
+            .timeline { padding-left: 2rem; }
+            .timeline-item::before { left: -2.35rem; }
+        }
+    </style>
+</head>
+<body>
+
+<canvas id="bg-canvas"></canvas>
+<div class="vignette"></div>
+
+<nav>
+    <a href="#" class="logo">Abhra<span> </span>Vyas</a>
+    <div class="links">
+        <a href="#about">About</a>
+        <a href="#research">Research</a>
+        <a href="#education">Education</a>
+        <a href="#experience">Experience</a>
+        <a href="#skills">Skills</a>
+    </div>
+</nav>
+
+<section class="hero">
+    <div class="eq-float" style="top:25%; right:5%;">G_{μν} + Λg_{μν} = \frac{8πG}{c^4} T_{μν}</div>
+    <div class="eq-float" style="bottom:20%; left:2%;">ds² = -(1 - \frac{2GM}{rc²})c²dt² + (1 - \frac{2GM}{rc²})^{-1}dr² + r²dΩ²</div>
+    
+    <div class="hero-content">
+        <h1>Abhra Vyas</h1>
+        <h2>Exploring General Relativity Through Computation (I've seen interstellar atleast a 100 times btw)</h2>
+        <p>
+            Computer Science Engineering student specializing in AI & ML. I explore the intersection of computation, higher mathematics, and theoretical physics, currently focusing on translating geometric models of Schwarzschild spacetime into interactive simulations.
+        </p>
+        <div class="btns">
+            <a class="btn btn-primary" href="#research">View Research</a>
+            <a class="btn btn-outline" href="mailto:vyasabhra@gmail.com">vyasabhra@gmail.com</a>
+        </div>
+    </div>
+</section>
+
+<section id="about" class="reveal">
+    <h3>About Me</h3>
+    <div class="card" style="font-size: 1.1rem; padding: 3rem;">
+        <p style="margin-bottom: 1.5rem;">
+            I am a dedicated Computer Science student with a profound passion for theoretical physics and Artificial Intelligence. My academic journey is driven by the desire to merge these fields—using advanced computational techniques to visualize and solve complex physical phenomena.
+        </p>
+        <p>
+            I actively engage in rigorous self-study, constantly expanding my mathematical foundation in differential geometry and tensor calculus to build mathematically accurate 2D and 3D simulations of astrophysical anomalies.
+        </p>
+    </div>
+</section>
+
+<section id="research" class="reveal">
+    <h3>Technical Projects & Research</h3>
+    <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem;">
+            <h4>Black Hole Visualization & Simulation</h4>
+            <span class="date">In Progress</span>
+        </div>
+        <span class="tech-stack">Python • Matplotlib • Numba • Numerical Relativity</span>
+        <p class="muted" style="margin-bottom: 1rem;">A computational physics project modeling the optical effects of black holes using principles of General Relativity.</p>
+        <ul>
+            <li>Implemented complex geodesic equations to accurately simulate light bending in Schwarzschild space-time.</li>
+            <li>Building custom ray-tracing methodologies to compute and render gravitational lensing effects.</li>
+            <li>Developing a robust 3D model designed to visualize event horizon distortions and photon spheres.</li>
+            <li>Researching and exploring Kerr Metric mathematical solutions to lay groundwork for future rotating black hole simulations.</li>
+        </ul>
+    </div>
+</section>
+
+<section id="education" class="reveal">
+    <h3>Education</h3>
+    <div class="timeline">
+        <div class="timeline-item">
+            <span class="date">Aug 2023 - Present</span>
+            <h4>Medi-Caps University <span style="font-weight:400; color:var(--text-muted); font-size:1rem;">| Indore, MP</span></h4>
+            <p style="color:var(--accent); font-weight:500; margin-bottom:0.5rem;">Bachelor's in Computer Science Engineering (AI+ML)</p>
+            <p class="muted"><strong>Current Status:</strong> 4th Semester</p>
+            <p class="muted"><strong>Relevant Coursework:</strong> Engineering Physics, Engineering Mathematics 1 & 2, Discrete Mathematics, Statistical Analysis.</p>
+        </div>
+        
+        <div class="timeline-item">
+            <span class="date">Oct 2021 - Mar 2022</span>
+            <h4>Kaisei High School <span style="font-weight:400; color:var(--text-muted); font-size:1rem;">| Matsue, Japan</span></h4>
+            <p style="color:var(--accent); font-weight:500; margin-bottom:0.5rem;">Asia Kakehashi Project</p>
+            <p class="muted">Participated in a highly selective cultural exchange program sponsored by Japan's Ministry of Education, Culture, Sports, Science, and Technology (MEXT).</p>
+        </div>
+
+        <div class="timeline-item">
+            <span class="date">2020 - 2023</span>
+            <h4>Indore Public School <span style="font-weight:400; color:var(--text-muted); font-size:1rem;">| Indore, MP</span></h4>
+            <p style="color:var(--accent); font-weight:500; margin-bottom:0.5rem;">Higher Secondary Diploma</p>
+            <p class="muted"><strong>Core Focus:</strong> Physics, Chemistry, and Mathematics.</p>
+        </div>
+    </div>
+</section>
+
+<section id="experience" class="reveal">
+    <h3>Experience & Leadership</h3>
+    <div class="grid">
+        <div class="card">
+            <span class="date">Ongoing</span>
+            <h4 style="margin-top: 0.5rem;">AFS Counsellor</h4>
+            <p class="muted" style="margin-bottom: 1rem;">Indore, India</p>
+            <p class="muted">Acting as a dedicated mentor and counsellor for two international exchange students. Facilitating their cultural adaptation, providing guidance, and developing strong cross-cultural communication skills.</p>
+        </div>
+        
+        <div class="card">
+            <span class="date">Mar 2024 - Apr 2024</span>
+            <h4 style="margin-top: 0.5rem;">Student Interviewer</h4>
+            <p class="muted" style="margin-bottom: 1rem;">Discovery Day - KLYES Program (AFS)</p>
+            <p class="muted">Conducted rigorous interviews with student applicants as part of the official selection process. Gained practical experience in candidate assessment, professional communication, and evaluation.</p>
+        </div>
+    </div>
+</section>
+
+<section id="certifications" class="reveal">
+    <h3>Certifications & Independent Study</h3>
+    <div class="timeline">
+        <div class="timeline-item">
+            <span class="date">Aug 2024</span>
+            <h4>Generative AI using Python <span style="font-weight:400; color:var(--text-muted); font-size:1rem;">| MSME Certified</span></h4>
+            <p class="muted">Focused on utilizing Python for creating and deploying generative AI models specifically tailored for image processing and Natural Language Processing (NLP).</p>
+        </div>
+        <div class="timeline-item">
+            <span class="date">Jun 2024</span>
+            <h4>AI and Data Science using Python <span style="font-weight:400; color:var(--text-muted); font-size:1rem;">| MSME Certified</span></h4>
+            <p class="muted">Comprehensive training in Pandas, NumPy, Matplotlib, and Seaborn for data manipulation and visualization. Heavy focus on statistical mathematics required for training and testing neural networks.</p>
+        </div>
+        <div class="timeline-item">
+            <span class="date">Self-Directed</span>
+            <h4>Theoretical Physics Curricula</h4>
+            <ul style="margin-top: 0.5rem;">
+                <li><strong>General Relativity:</strong> Completed Leonard Susskind's and Michel van Biezen's university-level lecture series.</li>
+                <li><strong>Tensor Mathematics:</strong> Mastered fundamental tensor mechanics via "Tensors for Beginners" by Eigenchris.</li>
+            </ul>
+        </div>
+    </div>
+</section>
+
+<section id="skills" class="reveal">
+    <h3>Technical Arsenal</h3>
+    <div class="card">
+        <div class="skill-category">
+            <h5>Programming & Development</h5>
+            <div class="tags">
+                <span class="tag">Python</span>
+                <span class="tag">C</span>
+                <span class="tag">C++</span>
+                <span class="tag">Java</span>
+                <span class="tag">MySQL</span>
+                <span class="tag">HTML / CSS</span>
+            </div>
+        </div>
+        <hr style="border: 0; border-top: 1px solid var(--border); margin: 2rem 0;">
+        <div class="skill-category">
+            <h5>Physics & Mathematics</h5>
+            <div class="tags">
+                <span class="tag">General Relativity</span>
+                <span class="tag">Schwarzschild Metric</span>
+                <span class="tag">Kerr Metric</span>
+                <span class="tag">Tensor Calculus</span>
+                <span class="tag">Differential Geometry</span>
+                <span class="tag">Linear Algebra</span>
+                <span class="tag">Coordinate Transformations</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="achievements" class="reveal">
+    <h3>Extracurricular Achievements</h3>
+    <div class="grid">
+        <div class="card" style="padding: 1.5rem;">
+            <h4 style="font-size: 1.1rem; margin-bottom: 0.2rem;">Rifle Shooting</h4>
+            <p class="muted">State & Pre-National Level. Bronze Medalist in CBSE West Zone.</p>
+        </div>
+        <div class="card" style="padding: 1.5rem;">
+            <h4 style="font-size: 1.1rem; margin-bottom: 0.2rem;">Bal-Vigyan</h4>
+            <p class="muted">City-Level Competition focusing on AI integration in Education.</p>
+        </div>
+        <div class="card" style="padding: 1.5rem;">
+            <h4 style="font-size: 1.1rem; margin-bottom: 0.2rem;">Indiana University AI Workshop</h4>
+            <p class="muted">Virtual AI & Botting workshop by Indiana University India Gateway.</p>
+        </div>
+        <div class="card" style="padding: 1.5rem;">
+            <h4 style="font-size: 1.1rem; margin-bottom: 0.2rem;">Model United Nations</h4>
+            <p class="muted">Participant at the Master's Summit MUN 2023.</p>
+        </div>
+    </div>
+</section>
+
+<footer>
+    <p>+91 9644001178 • vyasabhra@gmail.com</p>
+    <p style="margin-top: 1rem; opacity: 0.5;">Chatgpt and Gemini colaborated for this</p>
+</footer>
+
+<script>
+    // Advanced Interactive Spacetime Canvas
+    const canvas = document.getElementById('bg-canvas');
+    const ctx = canvas.getContext('2d');
+    let mouse = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+    
+    window.addEventListener('mousemove', (e) => {
+        mouse.x = e.clientX;
+        mouse.y = e.clientY;
+    });
+
+    function resize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    let t = 0;
+    function draw() {
+        t += 0.005; 
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.strokeStyle = 'rgba(56, 189, 248, 0.07)'; 
+        ctx.lineWidth = 1;
+
+        const gridSize = 45;
+        
+        // Draw horizontal lines
+        for (let y = 0; y < canvas.height; y += gridSize) {
+            ctx.beginPath();
+            for (let x = 0; x <= canvas.width; x += 20) {
+                // Calculate distance from mouse for gravity well effect
+                let dx = x - mouse.x;
+                let dy = y - mouse.y;
+                let dist = Math.sqrt(dx * dx + dy * dy);
+                
+                // Base wave + interactive gravity well
+                let wave = Math.sin(x * 0.005 + t + y * 0.01) * 15;
+                let gravity = Math.max(0, 150 - dist) * 0.1 * (dy > 0 ? 1 : -1);
+                
+                if (x === 0) ctx.moveTo(x, y + wave + gravity);
+                else ctx.lineTo(x, y + wave + gravity);
+            }
+            ctx.stroke();
+        }
+
+        // Draw vertical lines
+        for (let x = 0; x < canvas.width; x += gridSize) {
+            ctx.beginPath();
+            for (let y = 0; y <= canvas.height; y += 20) {
+                let dx = x - mouse.x;
+                let dy = y - mouse.y;
+                let dist = Math.sqrt(dx * dx + dy * dy);
+                
+                let wave = Math.cos(y * 0.005 + t + x * 0.01) * 15;
+                let gravity = Math.max(0, 150 - dist) * 0.1 * (dx > 0 ? 1 : -1);
+                
+                if (y === 0) ctx.moveTo(x + wave + gravity, y);
+                else ctx.lineTo(x + wave + gravity, y);
+            }
+            ctx.stroke();
+        }
+
+        requestAnimationFrame(draw);
+    }
+    draw();
+
+    // Scroll Observer
+    const observerOptions = { threshold: 0.1, rootMargin: "0px 0px -50px 0px" };
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(e => {
+            if (e.isIntersecting) {
+                e.target.classList.add('show');
+                observer.unobserve(e.target);
+            }
+        });
+    }, observerOptions);
+
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
