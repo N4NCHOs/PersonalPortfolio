@@ -65,10 +65,8 @@
       transform: translate(-50%, -50%);
       opacity: .4;
       will-change: transform;
-      /* trail lerps in JS via rAF, no CSS transition needed */
     }
 
-    /* ── SIDEBAR ──────────────────────────── */
     .sidebar {
       position: fixed;
       top: 0; left: 0;
@@ -81,7 +79,6 @@
       padding: 60px 48px;
       z-index: 100;
       overflow: hidden;
-      /* promote sidebar to its own layer so page scrolling doesn't repaint it */
       will-change: transform;
     }
     .sidebar::before {
@@ -783,15 +780,7 @@
                 view projects <span class="cta-arrow">&nbsp;››</span>
             </a>
             </div>
-        </div>
-
-        <!-- RIGHT: your photo -->
-        <div class="intro-photo-wrap">
-            <div class="intro-photo-frame">
-            <img src="assets/profile.png" alt="Fernando Addittiya" class="intro-photo" />
-            </div>
-        </div>
-
+          </div>
         </div>
     </div>
     </section>
