@@ -38,8 +38,6 @@
       cursor: none;
     }
 
-    /* ── CUSTOM CURSOR ─────────────────────── */
-    /* will-change tells the browser to promote these to their own GPU layers */
     #cursor {
       position: fixed;
       width: 10px; height: 10px;
@@ -47,14 +45,11 @@
       border-radius: 50%;
       pointer-events: none;
       z-index: 9999;
-      /* translate() instead of left/top avoids layout recalc */
       transform: translate(-50%, -50%);
-      /* removed mix-blend-mode: multiply — forces compositor re-paint every frame */
       transition: width .25s var(--ease-out-expo), height .25s var(--ease-out-expo), background .2s, opacity .2s;
       will-change: transform;
     }
     #cursor.expanded { width: 36px; height: 36px; background: var(--gold); opacity: .5; }
-
     #cursor-trail {
       position: fixed;
       width: 28px; height: 28px;
@@ -75,11 +70,12 @@
       background: var(--sidebar-bg);
       display: flex;
       flex-direction: column;
-      justify-content: flex-end;
-      padding: 60px 48px;
+      justify-content: space-between;
+      padding: 48px 48px 48px 48px;
       z-index: 100;
       overflow: hidden;
       will-change: transform;
+      transition: transform .35s var(--ease-out-expo);
     }
     .sidebar::before {
       content: '';
@@ -94,15 +90,23 @@
       background: linear-gradient(to bottom, transparent, var(--rust) 40%, var(--gold) 70%, transparent);
       opacity: .35;
     }
+
+    .sidebar-top {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
     .sidebar-logo {
-      position: absolute; top: 48px; left: 48px;
       font-family: 'DM Mono', monospace;
       font-size: 11px; letter-spacing: .2em;
       color: var(--text-muted); text-transform: uppercase; opacity: .6;
+      margin-bottom: 48px;
+      flex-shrink: 0;
     }
     .sidebar-logo span { color: var(--rust-light); }
 
-    nav { display: flex; flex-direction: column; gap: 8px; }
+    nav { display: flex; flex-direction: column; gap: 4px; }
 
     .nav-item {
       position: relative;
@@ -114,6 +118,7 @@
       transition: color .3s ease;
       display: flex; align-items: center; gap: 14px;
       border: none; background: none; text-align: left;
+      white-space: nowrap;
     }
     .nav-item::before {
       content: '';
@@ -135,8 +140,10 @@
     .nav-item.active .nav-dot { opacity: 1; }
 
     .sidebar-footer {
-      position: absolute; bottom: 48px; left: 48px;
-      display: flex; gap: 16px;
+      display: flex;
+      gap: 12px;
+      flex-shrink: 0;
+      padding-top: 24px;
     }
     .social-link {
       width: 32px; height: 32px;
@@ -149,30 +156,66 @@
       letter-spacing: .05em;
       transition: border-color .3s, color .3s, transform .3s;
       cursor: none;
-      /* no negative margin — that was causing overlap with nav */
     }
     .social-link:hover { border-color: var(--rust-light); color: var(--rust-light); transform: translateY(-2px); }
 
-    /* ── MAIN ─────────────────────────────── */
+    .menu-toggle {
+      display: none;
+      position: fixed;
+      top: 16px; left: 16px;
+      z-index: 200;
+      width: 40px; height: 40px;
+      background: var(--sidebar-bg);
+      border: 1px solid rgba(245,240,232,.15);
+      border-radius: 6px;
+      cursor: pointer;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      padding: 0;
+    }
+    .menu-toggle span {
+      display: block;
+      width: 18px; height: 1.5px;
+      background: rgba(245,240,232,.7);
+      transition: all .3s ease;
+    }
+    .menu-toggle.open span:nth-child(1) { transform: translateY(6.5px) rotate(45deg); }
+    .menu-toggle.open span:nth-child(2) { opacity: 0; }
+    .menu-toggle.open span:nth-child(3) { transform: translateY(-6.5px) rotate(-45deg); }
+
+    .sidebar-overlay {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.5);
+      z-index: 99;
+      opacity: 0;
+      transition: opacity .3s ease;
+    }
+    .sidebar-overlay.visible { opacity: 1; }
+
     .main { margin-left: var(--sidebar-w); flex: 1; position: relative; }
 
-    /* ── SECTIONS ─────────────────────────── */
     .section {
       min-height: 100vh;
-      padding: 0 100px;
+      padding: 100px 100px;
       display: flex; align-items: center;
       position: relative;
-      /* only animate opacity — skip translateY to avoid layout thrash on scroll */
       opacity: 0;
       transition: opacity .7s ease;
     }
     .section.visible { opacity: 1; }
     .section-inner { max-width: 740px; width: 100%; }
+
     .section:not(:first-child)::before {
       content: '';
-      position: absolute; top: 0; left: 100px; right: 100px;
-      height: 1px; background: var(--divider);
+      position: absolute;
+      top: 0; left: 100px; right: 100px;
+      height: 1px;
+      background: var(--divider);
     }
+
     .section-number {
       font-family: 'DM Mono', monospace;
       font-size: 11px; letter-spacing: .25em;
@@ -183,15 +226,18 @@
     }
     .section.visible .section-number { opacity: 1; }
 
-    /* ── INTRO ────────────────────────────── */
-#introduction .hero-name {
+    #introduction {
+      padding-top: 120px;
+      padding-bottom: 120px;
+    }
+
+    #introduction .hero-name {
       font-family: 'Playfair Display', serif;
-      font-size: clamp(42px, 5vw, 72px); 
+      font-size: clamp(48px, 6vw, 88px);
       font-weight: 900; line-height: .95;
       letter-spacing: -.02em;
       color: var(--mahogany);
-      overflow: hidden; 
-      margin-bottom: 16px;
+      overflow: hidden; margin-bottom: 16px;
     }
     .name-reveal {
       display: block;
@@ -204,7 +250,7 @@
 
     #introduction .hero-subtitle {
       font-family: 'Cormorant Garamond', serif;
-      font-size: clamp(18px,2.5vw,26px);
+      font-size: clamp(16px, 2.5vw, 26px);
       font-weight: 400; font-style: italic;
       color: var(--rust); letter-spacing: .02em;
       margin-bottom: 40px;
@@ -221,77 +267,16 @@
     .section.visible .hero-divider { width: 100%; }
 
     #introduction .hero-bio {
-      font-size: 17px; font-weight: 300;
+      font-size: clamp(15px, 1.8vw, 17px); font-weight: 300;
       line-height: 1.85; color: var(--text-body);
       text-align: justify; max-width: 580px;
       opacity: 0; transition: opacity .7s .6s ease;
     }
     .section.visible .hero-bio { opacity: 1; }
 
-.intro-layout {
-      display: grid;
-      grid-template-columns: 1.4fr 1fr; 
-      gap: 48px;
-      align-items: center;
-      width: 100%;
-      min-height: 600px;
-    }
-
-.intro-content { min-width: 0; }
-
-.intro-photo-wrap {
-  flex-shrink: 0;
-  opacity: 0;
-  transition: opacity .8s 1s ease;
-}
-.section.visible .intro-photo-wrap { opacity: 1; }
-
-.intro-photo-frame {
-      width: 100%;
-      max-width: 380px; 
-      margin-left: auto; 
-      height: 520px; 
-      position: relative;
-      overflow: hidden;
-    }
-
-/* Decorative corner accent */
-.intro-photo-frame::before {
-  content: '';
-  position: absolute;
-  top: -8px; right: -8px;
-  width: 60px; height: 60px;
-  border-top: 2px solid var(--rust);
-  border-right: 2px solid var(--rust);
-  z-index: 1;
-  pointer-events: none;
-}
-
-/* Decorative corner accent bottom-left */
-.intro-photo-frame::after {
-  content: '';
-  position: absolute;
-  bottom: -8px; left: -8px;
-  width: 60px; height: 60px;
-  border-bottom: 2px solid var(--gold);
-  border-left: 2px solid var(--gold);
-  z-index: 1;
-  pointer-events: none;
-}
-
-.intro-photo {
-  width: 100%; height: 100%;
-  object-fit: cover;
-  object-position: center top;
-  display: block;
-  filter: sepia(15%) contrast(1.05);
-  transition: filter .4s ease;
-}
-.intro-photo:hover { filter: sepia(0%) contrast(1); }
-
     .hero-cta {
       margin-top: 44px;
-      display: flex; align-items: center; gap: 40px;
+      display: flex; align-items: center; gap: 40px; flex-wrap: wrap;
       opacity: 0; transition: opacity .7s .8s ease;
     }
     .section.visible .hero-cta { opacity: 1; }
@@ -316,7 +301,6 @@
     .cta-arrow { font-size: 14px; transition: transform .3s ease; display: inline-block; }
     .cta-link:hover .cta-arrow { transform: translateX(6px); }
 
-    /* removed backdrop-filter from status badge — was always painting */
     .status-badge {
       display: inline-flex; align-items: center; gap: 10px;
       font-family: 'DM Mono', monospace;
@@ -338,14 +322,13 @@
       50%      { box-shadow: 0 0 0 6px rgba(93,191,110,0); }
     }
 
-    /* ── ABOUT ────────────────────────────── */
     .about-grid {
       display: grid; grid-template-columns: 1fr 1fr;
       gap: 64px; align-items: start;
     }
     .about-heading {
       font-family: 'Playfair Display', serif;
-      font-size: clamp(36px,4.5vw,56px);
+      font-size: clamp(32px, 4.5vw, 56px);
       font-weight: 700; line-height: 1.1;
       color: var(--mahogany); margin-bottom: 32px;
     }
@@ -368,17 +351,14 @@
     }
     .fact-value { font-size: 16px; font-weight: 400; color: var(--mahogany); }
 
-    /* ── SKILLS ───────────────────────────── */
     #skills {
-      align-items: center;
-      padding-top: 60px;
-      padding-bottom: 60px;
-      min-height: 100vh;
+      align-items: flex-start;
+      padding-top: 100px;
+      padding-bottom: 100px;
     }
-
     .skills-heading {
       font-family: 'Playfair Display', serif;
-      font-size: clamp(36px,4.5vw,56px);
+      font-size: clamp(32px, 4.5vw, 56px);
       font-weight: 700; color: var(--mahogany);
       margin-bottom: 12px;
     }
@@ -396,89 +376,74 @@
     }
     .skills-category-title span {
       font-family: 'Playfair Display', serif;
-      font-size: 22px; font-weight: 700;
+      font-size: clamp(16px, 2vw, 22px); font-weight: 700;
       color: var(--mahogany); white-space: nowrap; font-style: italic;
     }
 
     .skills-slider-wrap {
       position: relative;
-      /* reserve space at bottom for the absolutely-positioned controls */
       padding-bottom: 72px;
     }
-
-    /* CSS Grid stack: all slides occupy the same cell */
     .skills-slides-track {
       display: grid;
       grid-template-columns: 1fr;
       grid-template-rows: 1fr;
-      /* height animates when JS sets it */
       transition: height .5s var(--ease-out-expo);
       overflow: hidden;
     }
-
     .skills-slide {
       grid-area: 1 / 1 / 2 / 2;
       opacity: 0;
       transition: opacity .35s ease;
       pointer-events: none;
-      /* keep in flow so the track can measure height; visibility hides it without removing from layout */
       visibility: hidden;
       will-change: opacity;
     }
     .skills-slide.active {
-      opacity: 1;
-      pointer-events: all;
-      visibility: visible;
-      /* z-index so it sits above any exiting slide */
-      z-index: 1;
+      opacity: 1; pointer-events: all;
+      visibility: visible; z-index: 1;
     }
     .skills-slide.exiting {
-      opacity: 0;
-      pointer-events: none;
-      /* stays visible:visible momentarily so it fades rather than snapping */
-      z-index: 0;
+      opacity: 0; pointer-events: none; z-index: 0;
     }
 
     .skill-cards-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 16px;
+      gap: 14px;
       border: 1.5px solid rgba(46,26,18,.18);
       border-radius: 12px;
-      padding: 28px;
+      padding: 24px;
       background: rgba(255,255,255,.25);
     }
     .skill-card {
       background: var(--mahogany);
       border-radius: 10px;
-      padding: 22px 16px;
+      padding: 18px 12px;
       text-align: center;
       cursor: none;
-      /* only transform on hover, not box-shadow (cheaper) */
       transition: transform .25s var(--ease-out-expo);
       will-change: transform;
     }
     .skill-card:hover { transform: translateY(-4px); }
     .skill-card-name {
       font-family: 'Playfair Display', serif;
-      font-size: 15px; font-weight: 700;
-      color: var(--cream); margin-bottom: 10px;
+      font-size: 14px; font-weight: 700;
+      color: var(--cream); margin-bottom: 8px;
     }
     .skill-card-desc {
       font-family: 'Cormorant Garamond', serif;
-      font-size: 13px; font-weight: 300;
+      font-size: 12px; font-weight: 300;
       color: rgba(245,240,232,.72);
-      line-height: 1.65;
+      line-height: 1.6;
     }
     .skill-cards-grid.three-col { grid-template-columns: repeat(3, 1fr); }
 
-    /* Controls pinned to the bottom of the wrap — never affected by track height changes */
     .slider-controls {
       position: absolute;
       bottom: 0; left: 0; right: 0;
       display: flex; align-items: center; justify-content: center;
-      gap: 12px;
-      height: 64px;
+      gap: 12px; height: 64px;
     }
     .slider-btn {
       width: 36px; height: 36px;
@@ -498,10 +463,11 @@
     }
     .slider-dot.active { background: var(--rust); transform: scale(1.25); }
 
-    /* ── PROJECTS ─────────────────────────── */
+    #projects { padding-top: 100px; padding-bottom: 100px; }
+
     .projects-heading {
       font-family: 'Playfair Display', serif;
-      font-size: clamp(36px,4.5vw,56px);
+      font-size: clamp(32px, 4.5vw, 56px);
       font-weight: 700; color: var(--mahogany); margin-bottom: 56px;
     }
     .projects-list { display: flex; flex-direction: column; }
@@ -522,7 +488,7 @@
     }
     .project-title {
       font-family: 'Playfair Display', serif;
-      font-size: 22px; font-weight: 600;
+      font-size: clamp(18px, 2.5vw, 22px); font-weight: 600;
       color: var(--mahogany); margin-bottom: 8px;
       transition: color .25s;
     }
@@ -553,10 +519,8 @@
     }
     .project-card:hover .project-click-hint { opacity: 1; }
 
-    /* ── PROJECT MODAL ────────────────────── */
     .modal-backdrop {
       position: fixed; inset: 0;
-      /* plain dark overlay — no blur, no GPU compositor overhead */
       background: rgba(20,10,5,.78);
       z-index: 500;
       opacity: 0; pointer-events: none;
@@ -567,7 +531,7 @@
       position: fixed;
       top: 50%; left: 50%;
       transform: translate(-50%,-50%) scale(.94);
-      width: min(820px, calc(100vw - 80px));
+      width: min(820px, calc(100vw - 32px));
       max-height: 90vh;
       background: var(--cream);
       border-radius: 16px;
@@ -581,9 +545,9 @@
     }
     .modal.open { opacity: 1; pointer-events: all; transform: translate(-50%,-50%) scale(1); }
     .modal-header {
-      padding: 36px 44px 24px;
+      padding: 28px 28px 20px;
       border-bottom: 1px solid var(--divider);
-      display: flex; align-items: flex-start; justify-content: space-between; gap: 24px;
+      display: flex; align-items: flex-start; justify-content: space-between; gap: 16px;
     }
     .modal-project-num {
       font-family: 'DM Mono', monospace;
@@ -592,31 +556,31 @@
     }
     .modal-title {
       font-family: 'Playfair Display', serif;
-      font-size: 30px; font-weight: 700;
+      font-size: clamp(20px, 3vw, 30px); font-weight: 700;
       color: var(--mahogany); margin-bottom: 10px;
     }
     .modal-desc {
-      font-size: 15px; font-weight: 300;
+      font-size: 14px; font-weight: 300;
       line-height: 1.75; color: var(--text-muted); max-width: 500px;
     }
     .modal-tech { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
     .modal-close {
-      width: 40px; height: 40px;
+      width: 36px; height: 36px;
       border: 1px solid var(--divider); border-radius: 50%;
       background: none; cursor: none;
-      font-size: 18px; color: var(--text-muted);
+      font-size: 16px; color: var(--text-muted);
       display: flex; align-items: center; justify-content: center;
       transition: border-color .25s, color .25s, transform .25s;
       flex-shrink: 0;
     }
     .modal-close:hover { border-color: var(--rust); color: var(--rust); transform: rotate(90deg); }
-    .modal-images { padding: 28px 44px 36px; overflow-y: auto; }
+    .modal-images { padding: 20px 28px 28px; overflow-y: auto; }
     .modal-images-label {
       font-family: 'DM Mono', monospace;
       font-size: 10px; letter-spacing: .2em; text-transform: uppercase;
-      color: var(--text-muted); margin-bottom: 20px;
+      color: var(--text-muted); margin-bottom: 16px;
     }
-    .modal-img-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; }
+    .modal-img-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; }
     .modal-img-wrap {
       border-radius: 8px; overflow: hidden;
       border: 1px solid var(--divider);
@@ -643,10 +607,9 @@
       padding: 2px 7px; border-radius: 3px;
     }
 
-    /* ── CONTACT ──────────────────────────── */
     .contact-heading {
       font-family: 'Playfair Display', serif;
-      font-size: clamp(36px,4.5vw,56px);
+      font-size: clamp(32px, 4.5vw, 56px);
       font-weight: 700; line-height: 1.1;
       color: var(--mahogany); margin-bottom: 24px;
     }
@@ -670,16 +633,15 @@
     }
     .contact-link-value {
       font-family: 'Playfair Display', serif;
-      font-size: 22px; font-weight: 500;
+      font-size: clamp(16px, 2.5vw, 22px); font-weight: 500;
       color: var(--mahogany); transition: color .25s;
     }
     .contact-link:hover .contact-link-value { color: var(--rust); }
     .contact-arrow { font-size: 22px; color: var(--divider); transition: color .25s, transform .25s; }
     .contact-link:hover .contact-arrow { color: var(--rust); transform: translate(6px,-6px); }
 
-    /* ── SCROLL HINT ──────────────────────── */
     .scroll-hint {
-      position: fixed; bottom: 40px;
+      position: fixed; bottom: 32px;
       left: calc(var(--sidebar-w) + 100px);
       display: flex; align-items: center; gap: 12px;
       font-family: 'DM Mono', monospace;
@@ -698,17 +660,14 @@
       50%      { transform: scaleX(.4); opacity: 1; }
     }
 
-    /* ── PROGRESS BAR ─────────────────────── */
     .progress-bar {
       position: fixed; top: 0;
       left: var(--sidebar-w); height: 2px;
       background: linear-gradient(to right, var(--rust), var(--gold));
       z-index: 200;
       will-change: width;
-      /* no CSS transition — width is driven by rAF in JS */
     }
 
-    /* ── CLICK RIPPLE ─────────────────────── */
     .ripple {
       position: fixed;
       width: 8px; height: 8px;
@@ -719,6 +678,102 @@
       animation: ripple-out .5s ease forwards;
     }
     @keyframes ripple-out { to { transform: translate(-50%,-50%) scale(5); opacity: 0; } }
+
+    @media (max-width: 1024px) {
+      :root { --sidebar-w: 260px; }
+
+      .section { padding: 80px 60px; }
+      .section:not(:first-child)::before { left: 60px; right: 60px; }
+      #introduction { padding-top: 100px; }
+
+      .skill-cards-grid { grid-template-columns: repeat(3, 1fr); }
+      .skill-cards-grid.three-col { grid-template-columns: repeat(3, 1fr); }
+
+      .about-grid { gap: 40px; }
+      .scroll-hint { left: calc(var(--sidebar-w) + 60px); }
+    }
+
+    @media (max-width: 768px) {
+      body { cursor: auto; }
+
+      #cursor, #cursor-trail { display: none; }
+
+      .menu-toggle { display: flex; }
+      .sidebar-overlay { display: block; }
+
+      .sidebar {
+        transform: translateX(-100%);
+        width: 280px;
+        padding: 64px 32px 32px;
+        z-index: 150;
+      }
+      .sidebar.open { transform: translateX(0); }
+
+      .main { margin-left: 0; }
+      .progress-bar { left: 0; }
+
+      .section {
+        padding: 80px 24px 60px;
+        min-height: auto;
+        align-items: flex-start;
+      }
+      .section:not(:first-child)::before { left: 24px; right: 24px; }
+
+      #introduction {
+        padding-top: 80px;
+        min-height: 100vh;
+        align-items: center;
+      }
+
+      #introduction .hero-name {
+        font-size: clamp(40px, 12vw, 64px);
+      }
+
+      .about-grid {
+        grid-template-columns: 1fr;
+        gap: 40px;
+      }
+
+      .skill-cards-grid {
+        grid-template-columns: repeat(2, 1fr);
+        padding: 16px;
+        gap: 10px;
+      }
+      .skill-cards-grid.three-col { grid-template-columns: repeat(2, 1fr); }
+      .skills-category-title span { font-size: 15px; }
+
+      .project-card {
+        grid-template-columns: 40px 1fr;
+        gap: 12px;
+      }
+      .project-arrow { display: none; }
+      .project-desc { max-width: 100%; }
+
+      .modal {
+        width: calc(100vw - 16px);
+        max-height: 85vh;
+      }
+      .modal-header { padding: 20px 20px 16px; }
+      .modal-images { padding: 16px 20px 24px; }
+      .modal-img-grid { grid-template-columns: 1fr; }
+
+      .contact-link-value { font-size: 16px; }
+      .contact-sub { font-size: 16px; margin-bottom: 32px; }
+
+      .scroll-hint { display: none; }
+    }
+
+    @media (max-width: 480px) {
+      .skill-cards-grid { grid-template-columns: 1fr 1fr; gap: 8px; padding: 12px; }
+      .skill-card { padding: 14px 10px; }
+      .skill-card-name { font-size: 13px; }
+      .skill-card-desc { font-size: 11px; }
+
+      .hero-cta { gap: 24px; }
+      .section-inner { max-width: 100%; }
+
+      .about-grid { gap: 32px; }
+    }
   </style>
 </head>
 <body>
@@ -728,64 +783,62 @@
   <div class="progress-bar" id="progressBar" style="width:0%"></div>
   <div class="scroll-hint" id="scrollHint"><span class="scroll-line"></span>scroll to explore</div>
 
-  <!-- SIDEBAR -->
-  <aside class="sidebar">
-    <div class="sidebar-logo">FA <span>/ Portfolio</span></div>
-    <nav>
-      <button class="nav-item active" data-target="introduction">Introduction <span class="nav-dot"></span></button>
-      <button class="nav-item" data-target="about">About Fernando <span class="nav-dot"></span></button>
-      <button class="nav-item" data-target="skills">Skills <span class="nav-dot"></span></button>
-      <button class="nav-item" data-target="projects">Projects <span class="nav-dot"></span></button>
-      <button class="nav-item" data-target="contact">Contact <span class="nav-dot"></span></button>
-    </nav>
+  <button class="menu-toggle" id="menuToggle" aria-label="Open menu">
+    <span></span><span></span><span></span>
+  </button>
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-top">
+      <div class="sidebar-logo">FA <span>/ Portfolio</span></div>
+      <nav>
+        <button class="nav-item active" data-target="introduction">Introduction <span class="nav-dot"></span></button>
+        <button class="nav-item" data-target="about">About Fernando <span class="nav-dot"></span></button>
+        <button class="nav-item" data-target="skills">Skills <span class="nav-dot"></span></button>
+        <button class="nav-item" data-target="projects">Projects <span class="nav-dot"></span></button>
+        <button class="nav-item" data-target="contact">Contact <span class="nav-dot"></span></button>
+      </nav>
+    </div>
+
     <div class="sidebar-footer">
-      <a class="social-link" href="#" title="GitHub">GH</a>
-      <a class="social-link" href="#" title="LinkedIn">LN</a>
-      <a class="social-link" href="#" title="Email">@</a>
+      <a class="social-link" href="https://github.com/n4nchos" target="_blank" title="GitHub">GH</a>
+      <a class="social-link" href="https://www.linkedin.com/in/fernando-addittiya-501947292/" target="_blank" title="LinkedIn">LN</a>
+      <a class="social-link" href="mailto:fernandoavevo@gmail.com" title="Email">@</a>
     </div>
   </aside>
 
-  <!-- MAIN -->
   <main class="main">
 
-    <!-- INTRODUCTION -->
     <section class="section" id="introduction">
-    <div class="section-inner" style="max-width:1000px">
-        <div class="intro-layout">
-
-        <!-- LEFT: all existing content, unchanged -->
-        <div class="intro-content">
-            <div class="section-number">00 — Introduction</div>
-            <div class="status-badge">
-            <span class="status-dot"></span>
-            Currently building: Trackify
-            </div>
-            <h1 class="hero-name">
-            <span class="name-reveal">FERNANDO</span>
-            <span class="name-reveal">ADDITTIYA</span>
-            </h1>
-            <p class="hero-subtitle">software engineer &amp; AI enthusiast</p>
-            <div class="hero-divider"></div>
-            <p class="hero-bio">
-            Fernando is currently pursuing a Computer Science degree while actively building
-            projects in web development, cloud computing, and AI-driven applications.
-            He enjoys transforming ideas into practical solutions — from productivity tools
-            and analytics dashboards to smart recommendation systems.
-            </p>
-            <div class="hero-cta">
-            <a class="cta-link" href="#" onclick="scrollToSection('about');return false;">
-                learn more about me <span class="cta-arrow">&nbsp;››</span>
-            </a>
-            <a class="cta-link" href="#" onclick="scrollToSection('projects');return false;">
-                view projects <span class="cta-arrow">&nbsp;››</span>
-            </a>
-            </div>
-          </div>
+      <div class="section-inner">
+        <div class="section-number">00 — Introduction</div>
+        <div class="status-badge">
+          <span class="status-dot"></span>
+          Currently building: Trackify
         </div>
-    </div>
+        <h1 class="hero-name">
+          <span class="name-reveal">FERNANDO</span>
+          <span class="name-reveal">ADDITTIYA</span>
+        </h1>
+        <p class="hero-subtitle">software engineer &amp; AI enthusiast</p>
+        <div class="hero-divider"></div>
+        <p class="hero-bio">
+          Fernando is currently pursuing a Computer Science degree while actively building
+          projects in web development, cloud computing, and AI-driven applications.
+          He enjoys transforming ideas into practical solutions — from productivity tools
+          and analytics dashboards to smart recommendation systems.
+        </p>
+        <div class="hero-cta">
+          <a class="cta-link" href="#" onclick="scrollToSection('about');return false;">
+            learn more about me <span class="cta-arrow">&nbsp;››</span>
+          </a>
+          <a class="cta-link" href="#" onclick="scrollToSection('projects');return false;">
+            view projects <span class="cta-arrow">&nbsp;››</span>
+          </a>
+        </div>
+      </div>
     </section>
 
-    <!-- ABOUT -->
     <section class="section" id="about">
       <div class="section-inner" style="max-width:860px">
         <div class="section-number">01 — About Fernando</div>
@@ -819,7 +872,6 @@
       </div>
     </section>
 
-    <!-- SKILLS -->
     <section class="section" id="skills">
       <div class="section-inner" style="max-width:860px">
         <div class="section-number">02 — Skills</div>
@@ -829,7 +881,6 @@
         <div class="skills-slider-wrap">
           <div class="skills-slides-track" id="slidesTrack">
 
-            <!-- Slide 1: Programming Languages -->
             <div class="skills-slide active" data-slide="0">
               <div class="skills-category-title"><span>programming languages</span></div>
               <div class="skill-cards-grid">
@@ -844,7 +895,6 @@
               </div>
             </div>
 
-            <!-- Slide 2: Tools & Applications -->
             <div class="skills-slide" data-slide="1">
               <div class="skills-category-title"><span>tools &amp; applications</span></div>
               <div class="skill-cards-grid">
@@ -859,7 +909,6 @@
               </div>
             </div>
 
-            <!-- Slide 3: General Skills -->
             <div class="skills-slide" data-slide="2">
               <div class="skills-category-title"><span>general</span></div>
               <div class="skill-cards-grid">
@@ -874,7 +923,6 @@
               </div>
             </div>
 
-            <!-- Slide 4: Spoken Languages -->
             <div class="skills-slide" data-slide="3">
               <div class="skills-category-title"><span>spoken languages</span></div>
               <div class="skill-cards-grid three-col">
@@ -884,9 +932,8 @@
               </div>
             </div>
 
-          </div><!-- /skills-slides-track -->
+          </div>
 
-          <!-- Controls outside the track so they never jump -->
           <div class="slider-controls">
             <button class="slider-btn" id="sliderPrev">&#8249;</button>
             <div class="slider-dots" id="sliderDots">
@@ -901,7 +948,6 @@
       </div>
     </section>
 
-    <!-- PROJECTS -->
     <section class="section" id="projects">
       <div class="section-inner" style="max-width:780px">
         <div class="section-number">03 — Projects</div>
@@ -918,7 +964,7 @@
                 <span class="tech-chip">Go Language</span>
                 <span class="tech-chip">MySQL</span>
               </div>
-              <div class="project-click-hint">click to view gallery ›</div>
+              <div class="project-click-hint">tap to view gallery ›</div>
             </div>
             <div class="project-arrow">↗</div>
           </div>
@@ -934,7 +980,7 @@
                 <span class="tech-chip">Firebase</span>
                 <span class="tech-chip">Claude API</span>
               </div>
-              <div class="project-click-hint">click to view gallery ›</div>
+              <div class="project-click-hint">tap to view gallery ›</div>
             </div>
             <div class="project-arrow">↗</div>
           </div>
@@ -950,7 +996,7 @@
                 <span class="tech-chip">Python</span>
                 <span class="tech-chip">CryptoPanic API</span>
               </div>
-              <div class="project-click-hint">click to view gallery ›</div>
+              <div class="project-click-hint">tap to view gallery ›</div>
             </div>
             <div class="project-arrow">↗</div>
           </div>
@@ -966,7 +1012,7 @@
                 <span class="tech-chip">JavaScript</span>
                 <span class="tech-chip">MySQL</span>
               </div>
-              <div class="project-click-hint">click to view gallery ›</div>
+              <div class="project-click-hint">tap to view gallery ›</div>
             </div>
             <div class="project-arrow">↗</div>
           </div>
@@ -975,7 +1021,6 @@
       </div>
     </section>
 
-    <!-- CONTACT -->
     <section class="section" id="contact">
       <div class="section-inner">
         <div class="section-number">04 — Contact</div>
@@ -1000,7 +1045,6 @@
 
   </main>
 
-  <!-- PROJECT MODAL -->
   <div class="modal-backdrop" id="modalBackdrop"></div>
   <div class="modal" id="projectModal">
     <div class="modal-header">
@@ -1019,29 +1063,18 @@
   </div>
 
   <script>
-    /* ── CUSTOM CURSOR (rAF-based lerp, zero setTimeout) ── */
     const cursorEl = document.getElementById('cursor');
     const trailEl  = document.getElementById('cursor-trail');
+    let mouseX = window.innerWidth / 2, mouseY = window.innerHeight / 2;
+    let trailX = mouseX, trailY = mouseY;
 
-    let mouseX = window.innerWidth / 2;
-    let mouseY = window.innerHeight / 2;
-    let trailX = mouseX;
-    let trailY = mouseY;
-
-    // Single rAF loop drives both cursor and trail
     function animateCursor() {
-      // Lerp trail toward mouse (0.15 = smooth lag)
       trailX += (mouseX - trailX) * 0.15;
       trailY += (mouseY - trailY) * 0.15;
-
-      cursorEl.style.left = mouseX + 'px';
-      cursorEl.style.top  = mouseY + 'px';
-      trailEl.style.left  = trailX + 'px';
-      trailEl.style.top   = trailY + 'px';
-
+      cursorEl.style.left = mouseX + 'px'; cursorEl.style.top = mouseY + 'px';
+      trailEl.style.left  = trailX + 'px'; trailEl.style.top  = trailY + 'px';
       requestAnimationFrame(animateCursor);
     }
-
     document.addEventListener('mousemove', e => { mouseX = e.clientX; mouseY = e.clientY; });
     requestAnimationFrame(animateCursor);
 
@@ -1050,26 +1083,41 @@
       el.addEventListener('mouseleave', () => cursorEl.classList.remove('expanded'));
     });
 
-    /* ── CLICK RIPPLE (capped at 3 concurrent) ── */
+    const sidebar        = document.getElementById('sidebar');
+    const menuToggle     = document.getElementById('menuToggle');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+    function openSidebar() {
+      sidebar.classList.add('open');
+      menuToggle.classList.add('open');
+      sidebarOverlay.classList.add('visible');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeSidebar() {
+      sidebar.classList.remove('open');
+      menuToggle.classList.remove('open');
+      sidebarOverlay.classList.remove('visible');
+      document.body.style.overflow = '';
+    }
+    menuToggle.addEventListener('click', () => sidebar.classList.contains('open') ? closeSidebar() : openSidebar());
+    sidebarOverlay.addEventListener('click', closeSidebar);
+
     let rippleCount = 0;
     document.addEventListener('click', e => {
       if (rippleCount >= 3) return;
       rippleCount++;
       const r = document.createElement('div');
       r.className = 'ripple';
-      r.style.left = e.clientX + 'px';
-      r.style.top  = e.clientY + 'px';
+      r.style.left = e.clientX + 'px'; r.style.top = e.clientY + 'px';
       document.body.appendChild(r);
       setTimeout(() => { r.remove(); rippleCount--; }, 550);
     });
 
-    /* ── SCROLL / PROGRESS (rAF-throttled) ── */
     const sections    = document.querySelectorAll('.section');
     const navItems    = document.querySelectorAll('.nav-item');
     const scrollHint  = document.getElementById('scrollHint');
     const progressBar = document.getElementById('progressBar');
 
-    // Cache scrollHeight once; update on resize
     let docScrollHeight = document.body.scrollHeight - window.innerHeight;
     window.addEventListener('resize', () => {
       docScrollHeight = document.body.scrollHeight - window.innerHeight;
@@ -1087,9 +1135,6 @@
       });
     }, { passive: true });
 
-    /* ── INTERSECTION OBSERVER ── */
-    // rootMargin fires when section's top edge crosses 25% down from viewport top.
-    // threshold:0 means it triggers as soon as any pixel is visible (no expensive area calc).
     const observer = new IntersectionObserver(entries => {
       entries.forEach(e => {
         if (e.isIntersecting) {
@@ -1099,40 +1144,30 @@
         }
       });
     }, { threshold: 0, rootMargin: '-25% 0px -65% 0px' });
-
     sections.forEach(s => observer.observe(s));
 
-    /* ── SIDEBAR NAV ── */
     function scrollToSection(id) {
       document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      closeSidebar();
     }
     navItems.forEach(item => {
       item.addEventListener('click', () => scrollToSection(item.dataset.target));
     });
 
-    /* ── SKILLS SLIDER ── */
     let currentSlide = 0;
     const slides = document.querySelectorAll('.skills-slide');
     const dots   = document.querySelectorAll('.slider-dot');
     const total  = slides.length;
     const track  = document.getElementById('slidesTrack');
 
-    // Safe height measurement: render a detached clone at the correct width.
-    // Never mutates gridArea or any property on the live slide.
     function measureSlideHeight(slide) {
       const trackW = track.getBoundingClientRect().width || track.offsetWidth;
       const clone  = slide.cloneNode(true);
       clone.style.cssText = [
-        'position:fixed',
-        'top:-9999px',
-        'left:-9999px',
-        'width:' + trackW + 'px',
-        'opacity:0',
-        'pointer-events:none',
-        'visibility:hidden',
-        // reset grid placement so it lays out as a normal block
-        'grid-area:unset',
-        'transform:none',
+        'position:fixed', 'top:-9999px', 'left:-9999px',
+        'width:' + trackW + 'px', 'opacity:0',
+        'pointer-events:none', 'visibility:hidden',
+        'grid-area:unset', 'transform:none',
       ].join(';');
       document.body.appendChild(clone);
       const h = clone.offsetHeight;
@@ -1148,11 +1183,8 @@
       const prev = currentSlide;
       currentSlide = (n + total) % total;
       if (prev === currentSlide) return;
+      const prevSlide = slides[prev], nextSlide = slides[currentSlide];
 
-      const prevSlide = slides[prev];
-      const nextSlide = slides[currentSlide];
-
-      // Fade out old slide
       prevSlide.classList.add('exiting');
       prevSlide.classList.remove('active');
       setTimeout(() => {
@@ -1160,10 +1192,8 @@
         prevSlide.style.visibility = 'hidden';
       }, 360);
 
-      // Animate track to new height before activating
       setTrackHeight(nextSlide);
 
-      // Activate new slide on next paint so opacity transition fires
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
           nextSlide.style.visibility = '';
@@ -1174,7 +1204,6 @@
       });
     }
 
-    // Set initial height once layout and fonts are ready
     window.addEventListener('load', () => {
       setTrackHeight(slides[0]);
       setTimeout(() => document.getElementById('introduction').classList.add('visible'), 150);
@@ -1185,31 +1214,30 @@
     document.getElementById('sliderNext').addEventListener('click', () => goToSlide(currentSlide + 1));
     dots.forEach(d => d.addEventListener('click', () => goToSlide(+d.dataset.dot)));
 
-    /* ── PROJECT MODAL ── */
     const projectData = {
       xperimall: {
         num: '01', title: 'Xperimall',
         desc: 'A smart mall companion application that helps users manage spending budgets, track expenses, discover promotions, and navigate malls with an interactive indoor map system.',
         tech: ['React Native', 'Go Language', 'MySQL'],
-        imgs: ['/assets/Xperimall1.jpeg', '/assets/Xperimall2.jpeg', '/assets/Xperimall3.jpeg']
+        imgs: ['assets/Xperimall1.jpeg', 'assets/Xperimall2.jpeg', 'assets/Xperimall3.jpeg']
       },
       trackify: {
         num: '02', title: 'Trackify',
         desc: 'A social expense tracker with AI-powered insights, friend sharing, streak tracking, and daily budget management. Built for iOS and Android.',
         tech: ['React Native', 'Expo', 'Firebase', 'Claude API'],
-        imgs: ['images/trackify/img1.svg', 'images/trackify/img2.svg', 'images/trackify/img3.svg']
+        imgs: ['assets/Trackify1.png', 'assets/Trackify2.png', 'assets/Trackify3.png']
       },
       cryptonews: {
         num: '03', title: 'CryptoNews',
         desc: 'A web-based dashboard that analyzes cryptocurrency news sentiment using AI and visual analytics to help users understand market trends more effectively.',
         tech: ['ReactJS', 'FastAPI', 'Python', 'CryptoPanic API'],
-        imgs: ['images/cryptonews/img1.svg', 'images/cryptonews/img2.svg', 'images/cryptonews/img3.svg']
+        imgs: ['assets/Crypto1.png', 'assets/Crypto2.png', 'assets/Crypto3.png']
       },
       rasamurni: {
         num: '04', title: 'RASAMURNI Business Website',
         desc: 'A modern product business website developed for RASAMURNI. Designed to strengthen brand identity and improve customer engagement through a clean and visually appealing interface.',
         tech: ['HTML', 'CSS', 'JavaScript', 'MySQL'],
-        imgs: ['images/rasamurni/img1.svg', 'images/rasamurni/img2.svg', 'images/rasamurni/img3.svg']
+        imgs: ['assets/Rasamurni1.png', 'assets/Rasamurni2.png', 'assets/Rasamurni3.png']
       }
     };
 
